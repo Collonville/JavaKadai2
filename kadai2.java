@@ -4,15 +4,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class Car {
 	static String keys[] = {"buying", "maint", "doors", "persons", "luggage", "safety", "eval"};
 	static String evalLabel[] = {"unacc", "acc", "good", "vgood"};
 	private ArrayList<HashMap<String,String>> data;
-	private HashMap<String, String> map = new HashMap<String,String>();
 	
 	public Car (String fileName) {
 		data = new ArrayList<HashMap<String,String>> ();
@@ -21,7 +18,6 @@ public class Car {
 		try {
 			fileReader = new FileReader(fileName);
 		} catch (FileNotFoundException e) {
-			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 		}
 
@@ -32,16 +28,15 @@ public class Car {
             String line;
             StringTokenizer token;
             while ((line = br.readLine()) != null) {
+            	HashMap<String, String> map = new HashMap<String,String>();
                 token = new StringTokenizer(line, ",");
-               
-                //分割した文字を画面出力する
+
                 int cnt = 0;
                 while (token.hasMoreTokens()) {
                 	map.put(keys[cnt], token.nextToken());
-                	data.add(map);
-                    //System.out.println(data.toString());
                     cnt++;
                 }
+                data.add(map);
             }
             br.close();
         } catch (IOException ex) {
@@ -50,19 +45,13 @@ public class Car {
 	}
 	
 	public int [] analyze(String query[]) {
-		int results[] = new int [evalLabel.length];
+		//引数文字列を全て結合して渡す
+		Search search = new Search(data, String.join(" ", query), keys); 
 		
-		System.out.println(query[0]);
-		//andまたはorを区切り文字として設定(正規表現による指定)
-        @SuppressWarnings("resource")
-		Scanner s = new Scanner(query[0]).useDelimiter("s*ands*|s*ors*");
-
-        while (s.hasNext()) {
-            System.out.println(s.next());
-        }
-        s.close();
-		// 検索処理
-		return results;
+		//演算子の解析
+		search.findIndependence();
+        
+		return search.getEval(evalLabel);
 	}
 	
 	public static void main (String[] args) {
